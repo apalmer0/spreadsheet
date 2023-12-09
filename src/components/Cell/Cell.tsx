@@ -1,14 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import classNames from 'classnames'
 
-import {
-  selectDown,
-  selectLeft,
-  selectRight,
-  selectUp,
-  setActiveCellLocation,
-  updateCell,
-} from '../../store/slices/workbookSlice'
+import { actions } from '../../store/slices/workbookSlice'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 
 interface IProps {
@@ -44,7 +37,7 @@ export const Cell: React.FC<IProps> = React.memo(
 
     const persistChange = useCallback(() => {
       dispatch(
-        updateCell({
+        actions.updateCell({
           ...cell,
           value: calculateValue(value),
           formula: value,
@@ -53,7 +46,7 @@ export const Cell: React.FC<IProps> = React.memo(
     }, [cell, dispatch, value])
 
     const setSelected = () => {
-      dispatch(setActiveCellLocation(cell.location))
+      dispatch(actions.setActiveCellLocation(cell.location))
     }
 
     useEffect(() => {
@@ -73,31 +66,31 @@ export const Cell: React.FC<IProps> = React.memo(
         if (e.key === 'Enter') {
           e.preventDefault()
           persistChange()
-          dispatch(selectDown())
+          dispatch(actions.selectDown())
         } else if (e.key === 'Tab' && !e.shiftKey) {
           e.preventDefault()
           persistChange()
-          dispatch(selectRight())
+          dispatch(actions.selectRight())
         } else if (e.key === 'Tab' && e.shiftKey) {
           e.preventDefault()
           persistChange()
-          dispatch(selectLeft())
+          dispatch(actions.selectLeft())
         } else if (e.key === 'ArrowUp') {
           e.preventDefault()
           persistChange()
-          dispatch(selectUp())
+          dispatch(actions.selectUp())
         } else if (e.key === 'ArrowRight') {
           e.preventDefault()
           persistChange()
-          dispatch(selectRight())
+          dispatch(actions.selectRight())
         } else if (e.key === 'ArrowDown') {
           e.preventDefault()
           persistChange()
-          dispatch(selectDown())
+          dispatch(actions.selectDown())
         } else if (e.key === 'ArrowLeft') {
           e.preventDefault()
           persistChange()
-          dispatch(selectLeft())
+          dispatch(actions.selectLeft())
         }
       }
 

@@ -1,12 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit'
 
-import workbookReducer from './slices/workbookSlice'
+import * as workbook from './slices/workbookSlice'
 
 export const store = configureStore({
   reducer: {
-    workbook: workbookReducer,
+    workbook: workbook.reducer,
   },
 })
+
+export const actions = {
+  ...workbook.actions,
+}
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>

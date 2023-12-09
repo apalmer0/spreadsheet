@@ -84,14 +84,4 @@ export const workbookSlice = createSlice({
   },
 })
 
-// Action creators are generated for each case reducer function
-export const {
-  selectDown,
-  selectLeft,
-  selectRight,
-  selectUp,
-  setActiveCellLocation,
-  updateCell,
-} = workbookSlice.actions
-
-export default workbookSlice.reducer
+export const { actions, reducer } = workbookSlice
