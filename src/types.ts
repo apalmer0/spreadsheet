@@ -1,9 +1,8 @@
 export interface ICell {
   col: string
-  height: number
+  formula?: string
   location: string
   reference?: ICell
   row: string
   value?: string
-  width: number
 }
