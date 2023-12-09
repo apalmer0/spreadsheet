@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import classNames from 'classnames'
 
 import {
+  selectDown,
+  selectLeft,
+  selectRight,
+  selectUp,
   setActiveCellLocation,
   updateCell,
 } from '../../store/slices/workbookSlice'
@@ -14,24 +18,39 @@ interface IProps {
 
 export const Cell: React.FC<IProps> = React.memo(
   ({ cellLocation, selected = false }) => {
-    const cell = useAppSelector((s) => s.workbook.workbook[cellLocation])
-    const inputRef = React.useRef<HTMLInputElement>(null)
-    const dispatch = useAppDispatch()
+    const inputRef = useRef<HTMLInputElement>(null)
 
-    const [value, setValue] = useState(cell.value)
+    const cell = useAppSelector((s) => s.workbook.workbook[cellLocation])
+
+    const dispatch = useAppDispatch()
+    console.log('cell render')
+
+    const [value, setValue] = useState(cell.formula || '')
+    const [focused, setFocused] = useState(false)
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       setValue(event.target.value)
     }
 
-    const persistChange = () => {
+    const calculateValue = (v?: string) => {
+      if (!v) return ''
+
+      if (v[0] === '=') {
+        return 'formula!'
+      }
+
+      return v
+    }
+
+    const persistChange = useCallback(() => {
       dispatch(
         updateCell({
           ...cell,
-          value,
+          value: calculateValue(value),
+          formula: value,
         }),
       )
-    }
+    }, [cell, dispatch, value])
 
     const setSelected = () => {
       dispatch(setActiveCellLocation(cell.location))
@@ -40,8 +59,53 @@ export const Cell: React.FC<IProps> = React.memo(
     useEffect(() => {
       if (selected && inputRef.current) {
         inputRef.current.focus()
+        if (!focused) {
+          inputRef.current.setSelectionRange(value.length, value.length)
+          setFocused(true)
+        }
       }
-    }, [selected])
+    }, [selected, value.length, focused])
+
+    useEffect(() => {
+      const down = (e: any) => {
+        if (!selected) return
+
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          persistChange()
+          dispatch(selectDown())
+        } else if (e.key === 'Tab' && !e.shiftKey) {
+          e.preventDefault()
+          persistChange()
+          dispatch(selectRight())
+        } else if (e.key === 'Tab' && e.shiftKey) {
+          e.preventDefault()
+          persistChange()
+          dispatch(selectLeft())
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          persistChange()
+          dispatch(selectUp())
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault()
+          persistChange()
+          dispatch(selectRight())
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault()
+          persistChange()
+          dispatch(selectDown())
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault()
+          persistChange()
+          dispatch(selectLeft())
+        }
+      }
+
+      document.addEventListener('keydown', down)
+      return () => {
+        document.removeEventListener('keydown', down)
+      }
+    }, [dispatch, persistChange, selected])
 
     return (
       <td
@@ -55,9 +119,12 @@ export const Cell: React.FC<IProps> = React.memo(
             className={classNames('workbook-cell-inner', {
               'workbook-cell-inner--selected': selected,
             })}
+            onBlur={() => {
+              persistChange()
+              setFocused(true)
+            }}
             ref={inputRef}
             onChange={handleChange}
-            onBlur={persistChange}
             type="text"
             value={value}
           />

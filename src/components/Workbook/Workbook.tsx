@@ -11,7 +11,7 @@ export const Workbook: React.FC = () => {
   )
 
   return (
-    <div className="workbook-contaxiner">
+    <div className="workbook-container">
       <table className="workbook">
         <thead>
           <tr>
