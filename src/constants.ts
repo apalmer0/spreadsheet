@@ -8,7 +8,6 @@ const blankCell: ICell = {
   col: '',
   formula: undefined,
   location: '',
-  reference: undefined,
   row: '',
   value: undefined,
 }

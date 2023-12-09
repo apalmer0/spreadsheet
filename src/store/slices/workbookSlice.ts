@@ -1,15 +1,16 @@
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 
-import { ICell } from '../../types'
+import { ICell, TWorkbook } from '../../types'
 import { COL_COUNT, LETTERS, ROW_COUNT, WORKBOOK } from '../../constants'
+import { calculateValue } from '../../components/Cell/utils'
 
 export type WorkbookState = {
   activeCellLocation?: string
-  workbook: Record<string, ICell>
+  workbook: TWorkbook
 }
 
-const workbook: Record<string, ICell> = {}
+const workbook: TWorkbook = {}
 
 WORKBOOK.forEach((row) => {
   row.forEach((cell) => {
@@ -36,8 +37,22 @@ export const workbookSlice = createSlice({
     setActiveCellLocation: (state, action: PayloadAction<string>) => {
       state.activeCellLocation = action.payload
     },
-    updateCell: (state, action: PayloadAction<ICell>) => {
-      state.workbook[action.payload.location] = action.payload
+    updateCellFormula: (state, action: PayloadAction<ICell>) => {
+      const calculatedValue = calculateValue(
+        action.payload,
+        state.workbook,
+      ).toString()
+      state.workbook[action.payload.location] = {
+        ...action.payload,
+        formula: action.payload.formula,
+        value: calculatedValue,
+      }
+    },
+    updateCellValue: (state, action: PayloadAction<ICell>) => {
+      state.workbook[action.payload.location] = {
+        ...action.payload,
+        formula: action.payload.value,
+      }
     },
     selectUp: (state) => {
       if (!state.activeCellLocation) return

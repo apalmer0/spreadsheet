@@ -25,24 +25,12 @@ export const Cell: React.FC<IProps> = React.memo(
       setValue(event.target.value)
     }
 
-    const calculateValue = (v?: string) => {
-      if (!v) return ''
-
-      if (v[0] === '=') {
-        return 'formula!'
-      }
-
-      return v
-    }
-
     const persistChange = useCallback(() => {
-      dispatch(
-        actions.updateCell({
-          ...cell,
-          value: calculateValue(value),
-          formula: value,
-        }),
-      )
+      if (value && value[0] === '=') {
+        dispatch(actions.updateCellFormula({ ...cell, formula: value }))
+      } else {
+        dispatch(actions.updateCellValue({ ...cell, value }))
+      }
     }, [cell, dispatch, value])
 
     const setSelected = () => {
@@ -91,6 +79,9 @@ export const Cell: React.FC<IProps> = React.memo(
           e.preventDefault()
           persistChange()
           dispatch(actions.selectLeft())
+        } else if (e.key === 'Escape') {
+          e.preventDefault()
+          setValue(cell.formula || '')
         }
       }
 
@@ -98,7 +89,7 @@ export const Cell: React.FC<IProps> = React.memo(
       return () => {
         document.removeEventListener('keydown', down)
       }
-    }, [dispatch, persistChange, selected])
+    }, [dispatch, persistChange, cell.formula, selected])
 
     return (
       <td
