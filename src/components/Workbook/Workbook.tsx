@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { COLS, ROWS } from '../../constants'
+import { COLS, WORKBOOK } from '../../constants'
 import './Workbook.css'
 
 export const Workbook: React.FC = () => {
@@ -16,16 +16,20 @@ export const Workbook: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {ROWS.map((row) => (
-            <tr key={row}>
-              <th>{row}</th>
-              {COLS.map((col) => (
-                <td key={col} className="workbook-cell-outer">
-                  <input className="workbook-cell-inner" type="text" />
-                </td>
-              ))}
-            </tr>
-          ))}
+          {WORKBOOK.map((row, rowIndex) => {
+            return (
+              <tr key={rowIndex}>
+                <th>{rowIndex}</th>
+                {row.map((cell) => {
+                  return (
+                    <td key={cell.col} className="workbook-cell-outer">
+                      <input className="workbook-cell-inner" type="text" />
+                    </td>
+                  )
+                })}
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>
