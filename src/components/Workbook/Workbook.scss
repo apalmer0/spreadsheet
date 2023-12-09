@@ -1,0 +1,37 @@
+.workbook-container {
+  overflow: auto;
+  width: 100%;
+}
+
+.workbook {
+  border-color: lightgray;
+  border-spacing: 0;
+}
+
+.workbook-cell-outer {
+  border: 1px solid #e7e7e7;
+  cursor: pointer;
+  padding: 2px;
+
+  &--selected {
+    border: 2px solid blue;
+  }
+
+  &:hover {
+    cursor: text;
+    background-color: lightgray;
+  }
+}
+
+.workbook-cell-inner {
+  border: none;
+  cursor: pointer;
+  height: 20px;
+  outline: none;
+  padding: 0;
+  width: 100px;
+
+  &--selected {
+    cursor: text;
+  }
+}

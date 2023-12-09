@@ -1,12 +1,17 @@
 import React from 'react'
 
 import { COLS, WORKBOOK } from '../../constants'
-import './Workbook.css'
 import { Cell } from '../Cell'
+import { useAppSelector } from '../../hooks'
+import './Workbook.scss'
 
 export const Workbook: React.FC = () => {
+  const activeCellLocation = useAppSelector(
+    (s) => s.workbook.activeCellLocation,
+  )
+
   return (
-    <div className="workbook-container">
+    <div className="workbook-contaxiner">
       <table className="workbook">
         <thead>
           <tr>
@@ -21,7 +26,11 @@ export const Workbook: React.FC = () => {
             <tr key={rowIndex}>
               <th>{row[0].row}</th>
               {row.map((cell) => (
-                <Cell cell={cell} key={cell.col} />
+                <Cell
+                  cellLocation={cell.location}
+                  selected={activeCellLocation === cell.location}
+                  key={cell.col}
+                />
               ))}
             </tr>
           ))}
