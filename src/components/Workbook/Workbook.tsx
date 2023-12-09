@@ -2,6 +2,7 @@ import React from 'react'
 
 import { COLS, WORKBOOK } from '../../constants'
 import './Workbook.css'
+import { Cell } from '../Cell'
 
 export const Workbook: React.FC = () => {
   return (
@@ -16,20 +17,14 @@ export const Workbook: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {WORKBOOK.map((row, rowIndex) => {
-            return (
-              <tr key={rowIndex}>
-                <th>{rowIndex}</th>
-                {row.map((cell) => {
-                  return (
-                    <td key={cell.col} className="workbook-cell-outer">
-                      <input className="workbook-cell-inner" type="text" />
-                    </td>
-                  )
-                })}
-              </tr>
-            )
-          })}
+          {WORKBOOK.map((row, rowIndex) => (
+            <tr key={rowIndex}>
+              <th>{row[0].row}</th>
+              {row.map((cell) => (
+                <Cell cell={cell} key={cell.col} />
+              ))}
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
