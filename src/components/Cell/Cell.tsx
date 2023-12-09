@@ -6,7 +6,7 @@ interface IProps {
 }
 
 export const Cell: React.FC<IProps> = ({ cell }) => {
-  console.log('cell render', cell.id)
+  console.log('cell render', cell.location)
   const [value, setValue] = useState(cell.value)
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {

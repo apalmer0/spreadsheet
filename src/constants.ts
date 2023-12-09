@@ -7,7 +7,7 @@ const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 const blankCell: ICell = {
   col: '',
   height: 25,
-  id: '',
+  location: '',
   reference: undefined,
   row: '',
   value: undefined,
@@ -23,7 +23,7 @@ export const WORKBOOK: ICell[][] = ROWS.map((row) => {
     return {
       ...blankCell,
       col,
-      id: `${col}${rowNumber}`,
+      location: `${col}${rowNumber}`,
       row: rowNumber.toString(),
     }
   })

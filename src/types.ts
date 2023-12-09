@@ -1,7 +1,7 @@
 export interface ICell {
   col: string
   height: number
-  id: string
+  location: string
   reference?: ICell
   row: string
   value?: string
