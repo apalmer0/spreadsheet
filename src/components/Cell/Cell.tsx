@@ -66,19 +66,39 @@ export const Cell: React.FC<IProps> = React.memo(
         } else if (e.key === 'ArrowUp') {
           e.preventDefault()
           persistChange()
-          dispatch(actions.selectUp())
+
+          if (e.metaKey || e.ctrlKey) {
+            dispatch(actions.selectTop())
+          } else {
+            dispatch(actions.selectUp())
+          }
         } else if (e.key === 'ArrowRight') {
           e.preventDefault()
           persistChange()
-          dispatch(actions.selectRight())
+
+          if (e.metaKey || e.ctrlKey) {
+            dispatch(actions.selectLast())
+          } else {
+            dispatch(actions.selectRight())
+          }
         } else if (e.key === 'ArrowDown') {
           e.preventDefault()
           persistChange()
-          dispatch(actions.selectDown())
+
+          if (e.metaKey || e.ctrlKey) {
+            dispatch(actions.selectBottom())
+          } else {
+            dispatch(actions.selectDown())
+          }
         } else if (e.key === 'ArrowLeft') {
           e.preventDefault()
           persistChange()
-          dispatch(actions.selectLeft())
+
+          if (e.metaKey || e.ctrlKey) {
+            dispatch(actions.selectFirst())
+          } else {
+            dispatch(actions.selectLeft())
+          }
         } else if (e.key === 'Escape') {
           e.preventDefault()
           setValue(cell.formula || '')

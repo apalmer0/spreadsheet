@@ -64,6 +64,13 @@ export const workbookSlice = createSlice({
 
       state.activeCellLocation = `${col}${prevRow}`
     },
+    selectTop: (state) => {
+      if (!state.activeCellLocation) return
+
+      const [col] = getLocationValues(state.activeCellLocation)
+
+      state.activeCellLocation = `${col}${1}`
+    },
     selectRight: (state) => {
       if (!state.activeCellLocation) return
 
@@ -76,6 +83,14 @@ export const workbookSlice = createSlice({
 
       state.activeCellLocation = `${nextCol}${row}`
     },
+    selectLast: (state) => {
+      if (!state.activeCellLocation) return
+
+      const [_, row] = getLocationValues(state.activeCellLocation)
+      const lastCol = LETTERS[COL_COUNT - 1]
+
+      state.activeCellLocation = `${lastCol}${row}`
+    },
     selectLeft: (state) => {
       if (!state.activeCellLocation) return
 
@@ -86,6 +101,13 @@ export const workbookSlice = createSlice({
 
       state.activeCellLocation = `${prevCol}${row}`
     },
+    selectFirst: (state) => {
+      if (!state.activeCellLocation) return
+
+      const [_, row] = getLocationValues(state.activeCellLocation)
+
+      state.activeCellLocation = `A${row}`
+    },
     selectDown: (state) => {
       if (!state.activeCellLocation) return
 
@@ -95,6 +117,14 @@ export const workbookSlice = createSlice({
       if (nextRow > ROW_COUNT) return
 
       state.activeCellLocation = `${col}${nextRow}`
+    },
+    selectBottom: (state) => {
+      if (!state.activeCellLocation) return
+
+      const [col] = getLocationValues(state.activeCellLocation)
+      const lastRow = ROW_COUNT
+
+      state.activeCellLocation = `${col}${lastRow}`
     },
   },
 })
