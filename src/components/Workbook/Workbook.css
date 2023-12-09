@@ -1,0 +1,20 @@
+.workbook-container {
+  overflow: auto;
+  width: 100%;
+}
+
+.workbook {
+  border-collapse: collapse;
+}
+
+.workbook-cell-outer {
+  border: 1px solid black;
+  padding: 2px;
+}
+
+.workbook-cell-inner {
+  border: none;
+  padding: 0;
+  outline: none;
+  height: 20px;
+}
