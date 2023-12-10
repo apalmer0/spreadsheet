@@ -4,6 +4,7 @@ import classNames from 'classnames'
 import { actions } from '../../store/slices/workbookSlice'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import { detectCycle } from './utils'
+import './Cell.scss'
 
 interface IProps {
   cellLocation: string
