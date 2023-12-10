@@ -78,7 +78,10 @@ export const workbookSlice = createSlice({
         state.workbook[inputCell].outputs = filteredOutputs
       })
 
-      const references = getUpstreamReferences(action.payload, state.workbook)
+      const references = getUpstreamReferences(
+        action.payload.formula,
+        state.workbook,
+      )
       const calculatedValue = calculateValue(action.payload, state.workbook)
 
       state.workbook[action.payload.location] = {

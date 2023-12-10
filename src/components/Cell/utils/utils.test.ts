@@ -1,4 +1,4 @@
-import { calculateValue } from './'
+import { calculateValue, detectCycle } from './'
 import { ICell, TWorkbook } from '../../../types'
 
 describe('utils', () => {
@@ -128,6 +128,111 @@ describe('utils', () => {
       const result = calculateValue(cell, workbook)
 
       expect(result).toEqual(30)
+    })
+  })
+
+  describe('detectCycle', () => {
+    it('should return false if there are no cycles', () => {
+      const cell: ICell = {
+        col: 'A',
+        formula: '=A2+10',
+        inputs: [],
+        location: 'A1',
+        outputs: [],
+        row: '1',
+        value: '',
+      }
+      const workbook: TWorkbook = {
+        A2: {
+          col: 'A',
+          formula: '',
+          inputs: [],
+          location: 'A2',
+          outputs: [],
+          row: '2',
+          value: '10',
+        },
+      }
+      const result = detectCycle('A2', cell, workbook)
+
+      expect(result).toEqual(false)
+    })
+
+    it('should return true if there is a simple cycle', () => {
+      const cell: ICell = {
+        col: 'A',
+        formula: '=A1+10',
+        inputs: [],
+        location: 'A1',
+        outputs: [],
+        row: '1',
+        value: '1',
+      }
+      const workbook: TWorkbook = {}
+      const result = detectCycle(cell.formula, cell, workbook)
+
+      expect(result).toEqual(true)
+    })
+
+    it('should return true if there is a cycle', () => {
+      const cell: ICell = {
+        col: 'A',
+        formula: '=A2+10',
+        inputs: [],
+        location: 'A1',
+        outputs: [],
+        row: '1',
+        value: '1',
+      }
+      const workbook: TWorkbook = {
+        A2: {
+          col: 'A',
+          formula: '=A1+10',
+          inputs: [],
+          location: 'A2',
+          outputs: [],
+          row: '2',
+          value: '2',
+        },
+      }
+      const result = detectCycle(cell.formula, cell, workbook)
+
+      expect(result).toEqual(true)
+    })
+
+    it('should return true if there is a bigger cycle', () => {
+      const cell: ICell = {
+        col: 'A',
+        formula: '=B1+10',
+        inputs: [],
+        location: 'A1',
+        outputs: [],
+        row: '1',
+        value: '1',
+      }
+      const workbook: TWorkbook = {
+        B1: {
+          col: 'B',
+          formula: '=C1+10',
+          inputs: [],
+          location: 'B1',
+          outputs: [],
+          row: '1',
+          value: '2',
+        },
+        C1: {
+          col: 'C',
+          formula: '=A1+10',
+          inputs: [],
+          location: 'C1',
+          outputs: [],
+          row: '1',
+          value: '3',
+        },
+      }
+      const result = detectCycle(cell.formula, cell, workbook)
+
+      expect(result).toEqual(true)
     })
   })
 })

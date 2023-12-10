@@ -3,6 +3,7 @@ import classNames from 'classnames'
 
 import { actions } from '../../store/slices/workbookSlice'
 import { useAppDispatch, useAppSelector } from '../../hooks'
+import { detectCycle } from './utils'
 
 interface IProps {
   cellLocation: string
@@ -15,15 +16,27 @@ export const Cell: React.FC<IProps> = React.memo(
     const inputRef = useRef<HTMLInputElement>(null)
 
     const cell = useAppSelector((s) => s.workbook.workbook[cellLocation])
+    const workbook = useAppSelector((s) => s.workbook.workbook)
 
     const [value, setValue] = useState(cell.formula || '')
     const [focused, setFocused] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+    const [hovered, setHovered] = useState(false)
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       setValue(event.target.value)
     }
 
     const persistChange = useCallback(() => {
+      const cycle = detectCycle(value, cell, workbook)
+
+      if (cycle) {
+        setError('Dependency cycle detected')
+        return
+      }
+
+      setError(null)
+
       if (value && value[0] === '=') {
         dispatch(actions.updateCellFormula({ ...cell, formula: value }))
       } else {
@@ -31,7 +44,7 @@ export const Cell: React.FC<IProps> = React.memo(
       }
       dispatch(actions.updateReferences(cellLocation))
       setFocused(false)
-    }, [cell, dispatch, value, cellLocation])
+    }, [value, cell, workbook, dispatch, cellLocation])
 
     const setSelected = () => {
       dispatch(actions.setActiveCellLocation(cell.location))
@@ -148,12 +161,14 @@ export const Cell: React.FC<IProps> = React.memo(
         key={cell.col}
         className={classNames('workbook-cell-outer', {
           'workbook-cell-outer--selected': selected,
+          'workbook-cell-outer--error': error,
         })}
       >
         {selected && focused ? (
           <input
             className={classNames('workbook-cell-inner', {
               'workbook-cell-inner--selected': selected,
+              'workbook-cell-inner--error': error,
             })}
             onFocus={() => setFocused(true)}
             onBlur={() => {
@@ -171,8 +186,19 @@ export const Cell: React.FC<IProps> = React.memo(
               'workbook-cell-inner--selected': selected,
             })}
             onClick={setSelected}
+            onMouseEnter={() => {
+              if (!error) return
+              setHovered(true)
+            }}
+            onMouseLeave={() => {
+              if (!error) return
+              setHovered(false)
+            }}
           >
-            {cell.value}
+            {error ? '#REF' : cell.value}
+            {hovered && error && (
+              <div className="workbook-cell-error">{error}</div>
+            )}
           </div>
         )}
       </td>

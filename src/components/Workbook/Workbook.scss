@@ -1,3 +1,7 @@
+$cell-height: 20px;
+$cell-width: 100px;
+$error-message-height: 50px;
+
 .workbook-container {
   overflow: auto;
   width: 100%;
@@ -45,6 +49,12 @@
     padding: 1px;
   }
 
+  &--error {
+    border-right: 4px solid red;
+    font-weight: bold;
+    padding: 1px;
+  }
+
   &:hover {
     cursor: text;
   }
@@ -53,13 +63,32 @@
 .workbook-cell-inner {
   border: none;
   cursor: pointer;
-  height: 20px;
+  font-size: 16px;
+  height: $cell-height;
   outline: none;
   padding: 0;
+  position: relative;
   width: 100px;
-  font-size: 16px;
 
   &--selected {
     cursor: text;
   }
+
+  &--error {
+    background-color: transparent;
+  }
+}
+
+.workbook-cell-error {
+  background-color: white;
+  border-left: 4px solid red;
+  bottom: -($cell-height + $error-message-height);
+  box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
+  font-weight: normal;
+  height: $error-message-height;
+  left: $cell-width + 1;
+  padding: 10px;
+  position: absolute;
+  width: 250px;
+  z-index: 2;
 }

@@ -18,12 +18,12 @@ const getTokens = (formula: string): string[] => {
 // then calculate value for each one, in order
 
 export const getUpstreamReferences = (
-  cell: ICell,
+  formula: string,
   workbook: TWorkbook,
 ): string[] => {
-  if (!cell.formula) return []
+  if (!formula) return []
 
-  const tokens = getTokens(cell.formula)
+  const tokens = getTokens(formula)
 
   return tokens.reduce((memo, token) => {
     if (token.match(OPERATORS_REGEX)) {
@@ -37,6 +37,35 @@ export const getUpstreamReferences = (
     }
     return memo
   }, [] as string[])
+}
+
+export const detectCycle = (
+  formula: string,
+  cell: ICell,
+  workbook: TWorkbook,
+  memo: Set<string> = new Set(),
+): boolean => {
+  memo.add(cell.location)
+
+  const updatedCell: ICell = { ...cell, formula }
+  const updatedWorkbook: TWorkbook = {
+    ...workbook,
+    [cell.location]: updatedCell,
+  }
+
+  const locationReferences = getUpstreamReferences(formula, updatedWorkbook)
+
+  return locationReferences.some((reference) => {
+    const referencedCell = workbook[reference]
+    if (memo.has(reference)) return true
+    memo.add(reference)
+    return detectCycle(
+      referencedCell.formula,
+      referencedCell,
+      updatedWorkbook,
+      memo,
+    )
+  })
 }
 
 export const calculateValue = (
