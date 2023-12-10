@@ -23,9 +23,17 @@ const initialState: WorkbookState = {
   workbook,
 }
 
+const getCol = (location: string): string => {
+  return location.match(/[a-zA-Z]+/g)![0]
+}
+
+const getRow = (location: string): number => {
+  return parseInt(location.match(/\d+/g)![0], 10)
+}
+
 const getLocationValues = (location: string): [string, number] => {
-  const col = location.match(/[a-zA-Z]+/g)![0]
-  const row = parseInt(location.match(/\d+/g)![0], 10)
+  const col = getCol(location)
+  const row = getRow(location)
 
   return [col, row]
 }
@@ -138,6 +146,20 @@ export const selectors = {
     (activeCellLocation, workbook) => {
       if (!activeCellLocation) return undefined
       return workbook[activeCellLocation]
+    },
+  ),
+  selectActiveCol: createSelector(
+    [(state: RootState) => state.workbook.activeCellLocation],
+    (activeCellLocation) => {
+      if (!activeCellLocation) return undefined
+      return getCol(activeCellLocation)
+    },
+  ),
+  selectActiveRow: createSelector(
+    [(state: RootState) => state.workbook.activeCellLocation],
+    (activeCellLocation) => {
+      if (!activeCellLocation) return undefined
+      return getRow(activeCellLocation)
     },
   ),
 }

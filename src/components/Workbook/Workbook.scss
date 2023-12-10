@@ -8,6 +8,22 @@
   border-spacing: 0;
 }
 
+.col-header {
+  background-color: white;
+
+  &--selected {
+    background-color: lightblue;
+  }
+}
+
+.row-header {
+  background-color: white;
+
+  &--selected {
+    background-color: lightblue;
+  }
+}
+
 .workbook-cell-outer {
   border: 1px solid #e7e7e7;
   cursor: pointer;
