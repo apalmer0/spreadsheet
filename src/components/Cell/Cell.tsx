@@ -29,8 +29,9 @@ export const Cell: React.FC<IProps> = React.memo(
       } else {
         dispatch(actions.updateCellValue({ ...cell, formula: value, value }))
       }
+      dispatch(actions.updateReferences(cellLocation))
       setFocused(false)
-    }, [cell, dispatch, value])
+    }, [cell, dispatch, value, cellLocation])
 
     const setSelected = () => {
       dispatch(actions.setActiveCellLocation(cell.location))

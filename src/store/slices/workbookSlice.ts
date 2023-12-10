@@ -43,6 +43,21 @@ const getLocationValues = (location: string): [string, number] => {
   return [col, row]
 }
 
+// naive implementation - ignores order of cell updates. need to
+// perform topological sort to get the correct order
+const updateReferences = (cell: ICell, workbook: TWorkbook) => {
+  cell.outputs.forEach((outputCell) => {
+    const cell = workbook[outputCell]
+    const calculatedValue = calculateValue(cell, workbook)
+
+    workbook[outputCell] = {
+      ...cell,
+      value: calculatedValue.toString(),
+    }
+    updateReferences(workbook[outputCell], workbook)
+  })
+}
+
 export const workbookSlice = createSlice({
   name: 'workbook',
   initialState,
@@ -84,6 +99,9 @@ export const workbookSlice = createSlice({
         ...action.payload,
         value: action.payload.value,
       }
+    },
+    updateReferences: (state, action: PayloadAction<string>) => {
+      updateReferences(state.workbook[action.payload], state.workbook)
     },
     resetCell: (state, action: PayloadAction<string>) => {
       const cell = state.workbook[action.payload]
