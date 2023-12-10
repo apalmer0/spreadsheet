@@ -3,7 +3,10 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 
 import { ICell, RootState, TWorkbook } from '../../types'
 import { COL_COUNT, LETTERS, ROW_COUNT, WORKBOOK } from '../../constants'
-import { calculateValue } from '../../components/Cell/utils'
+import {
+  calculateValue,
+  getUpstreamReferences,
+} from '../../components/Cell/utils'
 
 export type WorkbookState = {
   activeCellLocation?: string
@@ -51,13 +54,30 @@ export const workbookSlice = createSlice({
       state.activeCellLocation = action.payload
     },
     updateCellFormula: (state, action: PayloadAction<ICell>) => {
+      // clear output references - formula might have removed that input
+      action.payload.inputs.forEach((inputCell) => {
+        const filteredOutputs = state.workbook[inputCell].outputs.filter(
+          (cellReference) => cellReference !== action.payload.location,
+        )
+        state.workbook[inputCell].outputs = filteredOutputs
+      })
+
+      const references = getUpstreamReferences(action.payload, state.workbook)
       const calculatedValue = calculateValue(action.payload, state.workbook)
 
       state.workbook[action.payload.location] = {
         ...action.payload,
         formula: action.payload.formula,
+        inputs: references,
         value: calculatedValue.toString(),
       }
+
+      references.forEach((referencedCell) => {
+        state.workbook[referencedCell].outputs = [
+          ...state.workbook[referencedCell].outputs,
+          action.payload.location,
+        ]
+      })
     },
     updateCellValue: (state, action: PayloadAction<ICell>) => {
       state.workbook[action.payload.location] = {
