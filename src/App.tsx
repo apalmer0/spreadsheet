@@ -1,21 +1,17 @@
 import React from 'react'
 
-import { actions, selectors } from './store'
-import { useAppDispatch, useAppSelector } from './hooks'
+import { selectors } from './store'
+import { useAppSelector } from './hooks'
+import { Title } from './components/Title'
 import { Workbook } from './components/Workbook'
 import './App.scss'
 
 function App() {
-  const dispatch = useAppDispatch()
   const activeCell = useAppSelector(selectors.selectActiveCell)
-
-  const unselect = () => dispatch(actions.setActiveCellLocation(''))
 
   return (
     <div className="container">
-      <div className="title" onClick={unselect}>
-        <h1>Sheet</h1>
-      </div>
+      <Title />
       <div className="tools">Tools</div>
       <div className="formula-row">
         <div className="location">{activeCell?.location}</div>

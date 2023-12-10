@@ -7,6 +7,7 @@ import { calculateValue } from '../../components/Cell/utils'
 
 export type WorkbookState = {
   activeCellLocation?: string
+  name: string
   workbook: TWorkbook
 }
 
@@ -20,6 +21,7 @@ WORKBOOK.forEach((row) => {
 
 const initialState: WorkbookState = {
   activeCellLocation: undefined,
+  name: 'Untitled Workbook',
   workbook,
 }
 
@@ -42,6 +44,9 @@ export const workbookSlice = createSlice({
   name: 'workbook',
   initialState,
   reducers: {
+    setWorkbookName: (state, action: PayloadAction<string>) => {
+      state.name = action.payload
+    },
     setActiveCellLocation: (state, action: PayloadAction<string>) => {
       state.activeCellLocation = action.payload
     },
