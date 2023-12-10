@@ -16,7 +16,6 @@ export const Cell: React.FC<IProps> = React.memo(
     const cell = useAppSelector((s) => s.workbook.workbook[cellLocation])
 
     const dispatch = useAppDispatch()
-    console.log('cell render')
 
     const [value, setValue] = useState(cell.formula || '')
     const [focused, setFocused] = useState(false)
@@ -107,6 +106,21 @@ export const Cell: React.FC<IProps> = React.memo(
           e.preventDefault()
           setFocused(false)
           setValue(cell.formula || '')
+        } else if (e.key === 'Backspace') {
+          if (!focused) {
+            e.preventDefault()
+            setValue('')
+          }
+        } else {
+          if (
+            !focused &&
+            ((e.keyCode >= 48 && e.keyCode <= 57) ||
+              (e.keyCode >= 65 && e.keyCode <= 90) ||
+              (e.keyCode >= 97 && e.keyCode <= 122))
+          ) {
+            setValue('')
+            setFocused(true)
+          }
         }
       }
 
@@ -114,7 +128,7 @@ export const Cell: React.FC<IProps> = React.memo(
       return () => {
         document.removeEventListener('keydown', down)
       }
-    }, [dispatch, persistChange, cell.formula, selected, focused])
+    }, [dispatch, persistChange, cell.formula, selected, focused, value])
 
     return (
       <td
