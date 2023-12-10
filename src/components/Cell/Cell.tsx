@@ -31,6 +31,7 @@ export const Cell: React.FC<IProps> = React.memo(
       } else {
         dispatch(actions.updateCellValue({ ...cell, value }))
       }
+      setFocused(false)
     }, [cell, dispatch, value])
 
     const setSelected = () => {
@@ -38,14 +39,13 @@ export const Cell: React.FC<IProps> = React.memo(
     }
 
     useEffect(() => {
-      if (selected && inputRef.current) {
+      if (!inputRef.current) return
+
+      if (focused) {
         inputRef.current.focus()
-        if (!focused) {
-          inputRef.current.setSelectionRange(value.length, value.length)
-          setFocused(true)
-        }
+        inputRef.current.setSelectionRange(value.length, value.length)
       }
-    }, [selected, value.length, focused])
+    }, [focused, value.length])
 
     useEffect(() => {
       const down = (e: any) => {
@@ -53,8 +53,12 @@ export const Cell: React.FC<IProps> = React.memo(
 
         if (e.key === 'Enter') {
           e.preventDefault()
-          persistChange()
-          dispatch(actions.selectDown())
+          if (!focused) {
+            setFocused(true)
+          } else {
+            persistChange()
+            dispatch(actions.selectDown())
+          }
         } else if (e.key === 'Tab' && !e.shiftKey) {
           e.preventDefault()
           persistChange()
@@ -66,41 +70,42 @@ export const Cell: React.FC<IProps> = React.memo(
         } else if (e.key === 'ArrowUp') {
           e.preventDefault()
           persistChange()
-
           if (e.metaKey || e.ctrlKey) {
             dispatch(actions.selectTop())
           } else {
             dispatch(actions.selectUp())
           }
         } else if (e.key === 'ArrowRight') {
-          e.preventDefault()
-          persistChange()
-
-          if (e.metaKey || e.ctrlKey) {
-            dispatch(actions.selectLast())
-          } else {
-            dispatch(actions.selectRight())
+          if (!focused) {
+            e.preventDefault()
+            persistChange()
+            if (e.metaKey || e.ctrlKey) {
+              dispatch(actions.selectLast())
+            } else {
+              dispatch(actions.selectRight())
+            }
           }
         } else if (e.key === 'ArrowDown') {
           e.preventDefault()
           persistChange()
-
           if (e.metaKey || e.ctrlKey) {
             dispatch(actions.selectBottom())
           } else {
             dispatch(actions.selectDown())
           }
         } else if (e.key === 'ArrowLeft') {
-          e.preventDefault()
-          persistChange()
-
-          if (e.metaKey || e.ctrlKey) {
-            dispatch(actions.selectFirst())
-          } else {
-            dispatch(actions.selectLeft())
+          if (!focused) {
+            e.preventDefault()
+            persistChange()
+            if (e.metaKey || e.ctrlKey) {
+              dispatch(actions.selectFirst())
+            } else {
+              dispatch(actions.selectLeft())
+            }
           }
         } else if (e.key === 'Escape') {
           e.preventDefault()
+          setFocused(false)
           setValue(cell.formula || '')
         }
       }
@@ -109,7 +114,7 @@ export const Cell: React.FC<IProps> = React.memo(
       return () => {
         document.removeEventListener('keydown', down)
       }
-    }, [dispatch, persistChange, cell.formula, selected])
+    }, [dispatch, persistChange, cell.formula, selected, focused])
 
     return (
       <td
@@ -118,14 +123,15 @@ export const Cell: React.FC<IProps> = React.memo(
           'workbook-cell-outer--selected': selected,
         })}
       >
-        {selected ? (
+        {selected && focused ? (
           <input
             className={classNames('workbook-cell-inner', {
               'workbook-cell-inner--selected': selected,
             })}
+            onFocus={() => setFocused(true)}
             onBlur={() => {
               persistChange()
-              setFocused(true)
+              setFocused(false)
             }}
             ref={inputRef}
             onChange={handleChange}
@@ -133,7 +139,12 @@ export const Cell: React.FC<IProps> = React.memo(
             value={value}
           />
         ) : (
-          <div className="workbook-cell-inner" onClick={setSelected}>
+          <div
+            className={classNames('workbook-cell-inner', {
+              'workbook-cell-inner--selected': selected,
+            })}
+            onClick={setSelected}
+          >
             {cell.value}
           </div>
         )}

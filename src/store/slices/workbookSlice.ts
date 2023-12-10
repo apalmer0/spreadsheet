@@ -1,7 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSelector, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 
-import { ICell, TWorkbook } from '../../types'
+import { ICell, RootState, TWorkbook } from '../../types'
 import { COL_COUNT, LETTERS, ROW_COUNT, WORKBOOK } from '../../constants'
 import { calculateValue } from '../../components/Cell/utils'
 
@@ -128,5 +128,15 @@ export const workbookSlice = createSlice({
     },
   },
 })
+
+export const selectors = {
+  selectActiveCell: createSelector(
+    (state: RootState) => {
+      if (!state.workbook.activeCellLocation) return undefined
+      return state.workbook.workbook[state.workbook.activeCellLocation]
+    },
+    (activeCell) => activeCell,
+  ),
+}
 
 export const { actions, reducer } = workbookSlice
