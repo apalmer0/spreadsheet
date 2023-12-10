@@ -11,11 +11,10 @@ interface IProps {
 
 export const Cell: React.FC<IProps> = React.memo(
   ({ cellLocation, selected = false }) => {
+    const dispatch = useAppDispatch()
     const inputRef = useRef<HTMLInputElement>(null)
 
     const cell = useAppSelector((s) => s.workbook.workbook[cellLocation])
-
-    const dispatch = useAppDispatch()
 
     const [value, setValue] = useState(cell.formula || '')
     const [focused, setFocused] = useState(false)
@@ -28,7 +27,7 @@ export const Cell: React.FC<IProps> = React.memo(
       if (value && value[0] === '=') {
         dispatch(actions.updateCellFormula({ ...cell, formula: value }))
       } else {
-        dispatch(actions.updateCellValue({ ...cell, value }))
+        dispatch(actions.updateCellValue({ ...cell, formula: value, value }))
       }
       setFocused(false)
     }, [cell, dispatch, value])
@@ -36,6 +35,10 @@ export const Cell: React.FC<IProps> = React.memo(
     const setSelected = () => {
       dispatch(actions.setActiveCellLocation(cell.location))
     }
+
+    useEffect(() => {
+      setValue(cell.formula ?? '')
+    }, [cell.formula])
 
     useEffect(() => {
       if (!inputRef.current) return
@@ -109,12 +112,13 @@ export const Cell: React.FC<IProps> = React.memo(
         } else if (e.key === 'Backspace') {
           if (!focused) {
             e.preventDefault()
-            setValue('')
+            dispatch(actions.resetCell(cellLocation))
           }
         } else {
           if (
             !focused &&
-            ((e.keyCode >= 48 && e.keyCode <= 57) ||
+            (e.key === '=' ||
+              (e.keyCode >= 48 && e.keyCode <= 57) ||
               (e.keyCode >= 65 && e.keyCode <= 90) ||
               (e.keyCode >= 97 && e.keyCode <= 122))
           ) {
@@ -128,7 +132,15 @@ export const Cell: React.FC<IProps> = React.memo(
       return () => {
         document.removeEventListener('keydown', down)
       }
-    }, [dispatch, persistChange, cell.formula, selected, focused, value])
+    }, [
+      cell.formula,
+      cellLocation,
+      dispatch,
+      focused,
+      persistChange,
+      selected,
+      value,
+    ])
 
     return (
       <td

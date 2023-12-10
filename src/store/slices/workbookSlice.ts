@@ -51,20 +51,28 @@ export const workbookSlice = createSlice({
       state.activeCellLocation = action.payload
     },
     updateCellFormula: (state, action: PayloadAction<ICell>) => {
-      const calculatedValue = calculateValue(
-        action.payload,
-        state.workbook,
-      ).toString()
+      const calculatedValue = calculateValue(action.payload, state.workbook)
+
       state.workbook[action.payload.location] = {
         ...action.payload,
         formula: action.payload.formula,
-        value: calculatedValue,
+        value: calculatedValue.toString(),
       }
     },
     updateCellValue: (state, action: PayloadAction<ICell>) => {
       state.workbook[action.payload.location] = {
         ...action.payload,
-        formula: action.payload.value,
+        value: action.payload.value,
+      }
+    },
+    resetCell: (state, action: PayloadAction<string>) => {
+      const cell = state.workbook[action.payload]
+
+      state.workbook[action.payload] = {
+        ...cell,
+        formula: '',
+        outputs: [],
+        value: '',
       }
     },
     selectUp: (state) => {

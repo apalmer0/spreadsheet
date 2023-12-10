@@ -6,10 +6,10 @@ export const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 
 const blankCell: ICell = {
   col: '',
-  formula: undefined,
+  formula: '',
   location: '',
   row: '',
-  value: undefined,
+  value: '',
 }
 
 export const COLS = new Array(COL_COUNT).fill(0).map((_, i) => LETTERS[i])
