@@ -131,11 +131,14 @@ export const workbookSlice = createSlice({
 
 export const selectors = {
   selectActiveCell: createSelector(
-    (state: RootState) => {
-      if (!state.workbook.activeCellLocation) return undefined
-      return state.workbook.workbook[state.workbook.activeCellLocation]
+    [
+      (state: RootState) => state.workbook.activeCellLocation,
+      (state: RootState) => state.workbook.workbook,
+    ],
+    (activeCellLocation, workbook) => {
+      if (!activeCellLocation) return undefined
+      return workbook[activeCellLocation]
     },
-    (activeCell) => activeCell,
   ),
 }
 
