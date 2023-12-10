@@ -45,6 +45,7 @@ const getLocationValues = (location: string): [string, number] => {
 
 // naive implementation - ignores order of cell updates. need to
 // perform topological sort to get the correct order
+// need to detect circular references too
 const updateReferences = (cell: ICell, workbook: TWorkbook) => {
   cell.outputs.forEach((outputCell) => {
     const cell = workbook[outputCell]
