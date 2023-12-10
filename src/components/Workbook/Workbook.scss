@@ -6,12 +6,19 @@
 .workbook {
   border-color: lightgray;
   border-spacing: 0;
+
+  .workbook-header {
+    position: sticky;
+    top: 0;
+  }
 }
 
 .col-header {
   background-color: white;
   border-left: 1px solid #e7e7e7;
   border-right: 1px solid #e7e7e7;
+  border-bottom: 2px solid #e7e7e7;
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.75);
 
   &--selected {
     background-color: lightblue;

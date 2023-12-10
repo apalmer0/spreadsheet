@@ -17,7 +17,7 @@ export const Workbook: React.FC = () => {
   return (
     <div className="workbook-container">
       <table className="workbook">
-        <thead>
+        <thead className="workbook-header">
           <tr>
             <th />
             {COLS.map((col) => (
