@@ -7,7 +7,9 @@ export const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
 const blankCell: ICell = {
   col: '',
   formula: '',
+  inputs: [],
   location: '',
+  outputs: [],
   row: '',
   value: '',
 }

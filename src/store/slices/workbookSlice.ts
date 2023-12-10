@@ -71,6 +71,7 @@ export const workbookSlice = createSlice({
       state.workbook[action.payload] = {
         ...cell,
         formula: '',
+        inputs: [],
         outputs: [],
         value: '',
       }
@@ -107,6 +108,7 @@ export const workbookSlice = createSlice({
     selectLast: (state) => {
       if (!state.activeCellLocation) return
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_, row] = getLocationValues(state.activeCellLocation)
       const lastCol = LETTERS[COL_COUNT - 1]
 
@@ -125,6 +127,7 @@ export const workbookSlice = createSlice({
     selectFirst: (state) => {
       if (!state.activeCellLocation) return
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [_, row] = getLocationValues(state.activeCellLocation)
 
       state.activeCellLocation = `A${row}`

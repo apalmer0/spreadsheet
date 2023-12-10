@@ -2,10 +2,12 @@ import { store } from './store'
 
 export interface ICell {
   col: string
-  formula?: string
+  formula: string
+  inputs: string[]
   location: string
+  outputs: string[]
   row: string
-  value?: string
+  value: string
 }
 
 export type TWorkbook = Record<string, ICell>

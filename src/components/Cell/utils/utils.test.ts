@@ -12,8 +12,10 @@ describe('utils', () => {
     it('should return the cell value if there is no formula', () => {
       const cell: ICell = {
         col: 'A',
-        formula: undefined,
+        formula: '',
         location: 'A1',
+        outputs: [],
+        inputs: [],
         row: '1',
         value: '10',
       }
@@ -25,10 +27,12 @@ describe('utils', () => {
     it('should return 0 if cell has no formula and no value', () => {
       const cell: ICell = {
         col: 'A',
-        formula: undefined,
+        formula: '',
+        inputs: [],
         location: 'A1',
+        outputs: [],
         row: '1',
-        value: undefined,
+        value: '',
       }
       const result = calculateValue(cell, {})
 
@@ -39,7 +43,9 @@ describe('utils', () => {
       const cell: ICell = {
         col: 'A',
         formula: '10',
+        inputs: [],
         location: 'A1',
+        outputs: [],
         row: '1',
         value: '10',
       }
@@ -52,9 +58,11 @@ describe('utils', () => {
       const cell: ICell = {
         col: 'A',
         formula: '=10+10',
+        inputs: [],
         location: 'A1',
+        outputs: [],
         row: '1',
-        value: undefined,
+        value: '',
       }
       const result = calculateValue(cell, {})
 
@@ -65,15 +73,19 @@ describe('utils', () => {
       const cell: ICell = {
         col: 'A',
         formula: '=A2+10',
+        inputs: [],
         location: 'A1',
+        outputs: [],
         row: '1',
-        value: undefined,
+        value: '',
       }
       const workbook: TWorkbook = {
         A2: {
           col: 'A',
-          formula: undefined,
+          formula: '',
+          inputs: [],
           location: 'A2',
+          outputs: [],
           row: '2',
           value: '10',
         },
@@ -87,22 +99,28 @@ describe('utils', () => {
       const cell: ICell = {
         col: 'A',
         formula: '=A2+10',
+        inputs: [],
         location: 'A1',
+        outputs: [],
         row: '1',
-        value: undefined,
+        value: '',
       }
       const workbook: TWorkbook = {
         A2: {
           col: 'A',
           formula: '=A3+10',
+          inputs: [],
           location: 'A2',
+          outputs: [],
           row: '2',
-          value: undefined,
+          value: '',
         },
         A3: {
           col: 'A',
-          formula: undefined,
+          formula: '',
+          inputs: [],
           location: 'A3',
+          outputs: [],
           row: '3',
           value: '10',
         },
