@@ -52,7 +52,6 @@ const updateReferences = (cell: ICell, workbook: TWorkbook) => {
     const cell = workbook[outputCellLocation]
 
     const calculatedValue = calculateValue(cell, workbook)
-    console.log('calculatedValue', outputCellLocation, calculatedValue)
 
     workbook[outputCellLocation] = {
       ...cell,
@@ -135,7 +134,6 @@ export const workbookSlice = createSlice({
       }
     },
     updateReferences: (state, action: PayloadAction<string>) => {
-      console.log('updateReferences', action.payload)
       const cell = state.workbook[action.payload]
       if (cell.valid) {
         updateReferences(state.workbook[action.payload], state.workbook)

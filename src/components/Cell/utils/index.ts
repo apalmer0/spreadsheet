@@ -39,18 +39,18 @@ export const getCycleElements = (
   seen: Set<string> = new Set(),
   cycle: Set<string> = new Set(),
 ): string[] => {
-  seen.add(cell.location)
   const inputLocations = getInputLocations(cell.formula, workbook)
 
   inputLocations.forEach((inputLocation) => {
     const inputCell = workbook[inputLocation]
-    const inputCellInputs = getInputLocations(inputCell.formula, workbook)
 
     if (seen.has(inputLocation)) {
       cycle.add(cell.location)
-      cycle.add(inputLocation)
-      inputCellInputs.forEach((c) => cycle.add(c))
+      Array.from(seen).forEach((location) => {
+        cycle.add(location)
+      })
     } else {
+      seen.add(cell.location)
       getCycleElements(inputCell, workbook, seen, cycle)
     }
   })
@@ -58,22 +58,8 @@ export const getCycleElements = (
   return Array.from(cycle)
 }
 
-export const detectCycle = (
-  cell: ICell,
-  workbook: TWorkbook,
-  memo: Set<string> = new Set(),
-): boolean => {
-  const inputLocations = getInputLocations(cell.formula, workbook)
-
-  return inputLocations.some((inputLocation) => {
-    const inputCell = workbook[inputLocation]
-
-    if (memo.has(inputLocation)) return true
-
-    memo.add(inputLocation)
-
-    return detectCycle(inputCell, workbook, memo)
-  })
+export const detectCycle = (cell: ICell, workbook: TWorkbook): boolean => {
+  return getCycleElements(cell, workbook).length > 0
 }
 
 export const calculateValue = (

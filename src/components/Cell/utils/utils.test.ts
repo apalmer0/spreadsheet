@@ -199,6 +199,45 @@ describe('utils', () => {
       expect(result).toEqual(false)
     })
 
+    it('should return false if no cycle exists', () => {
+      const workbook = {
+        A1: {
+          col: 'A',
+          formula: '10',
+          inputs: [],
+          location: 'A1',
+          outputs: ['A2', 'A3'],
+          row: '1',
+          valid: true,
+          value: '10',
+        },
+        A2: {
+          col: 'A',
+          formula: '=A1',
+          inputs: ['A1'],
+          location: 'A2',
+          outputs: ['A3'],
+          row: '2',
+          valid: true,
+          value: '10',
+        },
+        A3: {
+          col: 'A',
+          formula: '=A1+A2',
+          inputs: ['A1', 'A2'],
+          location: 'A3',
+          outputs: [],
+          row: '3',
+          valid: true,
+          value: '20',
+        },
+      }
+
+      const result = detectCycle(workbook.A3, workbook)
+
+      expect(result).toEqual(false)
+    })
+
     it('should return true if there is a simple cycle', () => {
       const A1 = {
         col: 'A',
@@ -317,6 +356,45 @@ describe('utils', () => {
       expect(result).toEqual([])
     })
 
+    it('should return an empty array no cycle exists', () => {
+      const workbook = {
+        A1: {
+          col: 'A',
+          formula: '10',
+          inputs: [],
+          location: 'A1',
+          outputs: ['A2', 'A3'],
+          row: '1',
+          valid: true,
+          value: '10',
+        },
+        A2: {
+          col: 'A',
+          formula: '=A1',
+          inputs: ['A1'],
+          location: 'A2',
+          outputs: ['A3'],
+          row: '2',
+          valid: true,
+          value: '10',
+        },
+        A3: {
+          col: 'A',
+          formula: '=A1+A2',
+          inputs: ['A1', 'A2'],
+          location: 'A3',
+          outputs: [],
+          row: '3',
+          valid: true,
+          value: '20',
+        },
+      }
+
+      const result = getCycleElements(workbook.A3, workbook)
+
+      expect(result).toEqual([])
+    })
+
     it('should an empty array if referencing the same cell twice', () => {
       const A1 = {
         col: 'A',
@@ -396,18 +474,17 @@ describe('utils', () => {
     })
 
     it('should return the elements in the cycle if there is a bigger cycle', () => {
-      const A1: ICell = {
-        col: 'A',
-        formula: '=B1+10',
-        inputs: [],
-        location: 'A1',
-        outputs: [],
-        row: '1',
-        valid: true,
-        value: '1',
-      }
       const workbook: TWorkbook = {
-        A1,
+        A1: {
+          col: 'A',
+          formula: '=B1+10',
+          inputs: [],
+          location: 'A1',
+          outputs: [],
+          row: '1',
+          valid: true,
+          value: '1',
+        },
         B1: {
           col: 'B',
           formula: '=C1+10',
@@ -439,7 +516,7 @@ describe('utils', () => {
           value: '3',
         },
       }
-      const result = getCycleElements(A1, workbook)
+      const result = getCycleElements(workbook.A1, workbook)
 
       expect(result).toHaveLength(3)
       expect(result).toEqual(expect.arrayContaining(['A1', 'B1', 'C1']))
