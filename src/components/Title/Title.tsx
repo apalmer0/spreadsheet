@@ -22,6 +22,9 @@ export const Title: React.FC = () => {
           type="text"
           className="title-input"
           autoFocus
+          onFocus={() => {
+            dispatch(actions.setActiveCellLocation(''))
+          }}
           onBlur={() => setEditing(false)}
           onChange={(e) => {
             setTempName(e.target.value)
