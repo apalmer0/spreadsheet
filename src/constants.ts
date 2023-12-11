@@ -11,6 +11,7 @@ const blankCell: ICell = {
   location: '',
   outputs: [],
   row: '',
+  valid: true,
   value: '',
 }
 

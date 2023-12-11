@@ -7,6 +7,7 @@ export interface ICell {
   location: string
   outputs: string[]
   row: string
+  valid: boolean
   value: string
 }
 

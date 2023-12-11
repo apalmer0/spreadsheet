@@ -13,11 +13,7 @@ const getTokens = (formula: string): string[] => {
     }, [] as string[])
 }
 
-// for each cell, find all upstream references (when?)
-// once we have all references, use topological sort to figure out which is first
-// then calculate value for each one, in order
-
-export const getUpstreamReferences = (
+export const getInputLocations = (
   formula: string,
   workbook: TWorkbook,
 ): string[] => {
@@ -37,33 +33,46 @@ export const getUpstreamReferences = (
   }, [] as string[])
 }
 
+export const getCycleElements = (
+  cell: ICell,
+  workbook: TWorkbook,
+  seen: Set<string> = new Set(),
+  cycle: Set<string> = new Set(),
+): string[] => {
+  seen.add(cell.location)
+  const inputLocations = getInputLocations(cell.formula, workbook)
+
+  inputLocations.forEach((inputLocation) => {
+    const inputCell = workbook[inputLocation]
+    const inputCellInputs = getInputLocations(inputCell.formula, workbook)
+
+    if (seen.has(inputLocation)) {
+      cycle.add(cell.location)
+      cycle.add(inputLocation)
+      inputCellInputs.forEach((c) => cycle.add(c))
+    } else {
+      getCycleElements(inputCell, workbook, seen, cycle)
+    }
+  })
+
+  return Array.from(cycle)
+}
+
 export const detectCycle = (
-  formula: string,
   cell: ICell,
   workbook: TWorkbook,
   memo: Set<string> = new Set(),
 ): boolean => {
-  const updatedCell: ICell = { ...cell, formula }
-  const updatedWorkbook: TWorkbook = {
-    ...workbook,
-    [cell.location]: updatedCell,
-  }
+  const inputLocations = getInputLocations(cell.formula, workbook)
 
-  const locationReferences = getUpstreamReferences(formula, updatedWorkbook)
+  return inputLocations.some((inputLocation) => {
+    const inputCell = workbook[inputLocation]
 
-  return locationReferences.some((reference) => {
-    const referencedCell = updatedWorkbook[reference]
+    if (memo.has(inputLocation)) return true
 
-    if (memo.has(reference)) return true
+    memo.add(inputLocation)
 
-    memo.add(reference)
-
-    return detectCycle(
-      referencedCell.formula,
-      referencedCell,
-      updatedWorkbook,
-      memo,
-    )
+    return detectCycle(inputCell, workbook, memo)
   })
 }
 

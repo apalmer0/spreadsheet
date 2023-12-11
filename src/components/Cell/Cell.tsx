@@ -19,7 +19,6 @@ export const Cell: React.FC<IProps> = React.memo(
 
     const [displayValue, setDisplayValue] = useState(cell.formula || '')
     const [focused, setFocused] = useState(false)
-    const [cellInvalid, setCellInvalid] = useState(false)
     const [hovered, setHovered] = useState(false)
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,20 +26,27 @@ export const Cell: React.FC<IProps> = React.memo(
     }
 
     const persistChange = useCallback(() => {
+      dispatch(actions.clearCycle(cellLocation))
       if (displayValue && displayValue[0] === '=') {
-        dispatch(actions.updateCellFormula({ ...cell, formula: displayValue }))
+        dispatch(
+          actions.updateCellFormula({
+            cellLocation,
+            newFormula: displayValue,
+          }),
+        )
       } else {
         dispatch(
           actions.updateCellValue({
-            ...cell,
-            formula: displayValue,
-            value: displayValue,
+            cellLocation,
+            newValue: displayValue,
           }),
         )
       }
+      dispatch(actions.detectCycle(cellLocation))
+      dispatch(actions.calculateCellValue(cellLocation))
       dispatch(actions.updateReferences(cellLocation))
       setFocused(false)
-    }, [displayValue, cell, dispatch, cellLocation])
+    }, [displayValue, dispatch, cellLocation])
 
     const setSelected = () => {
       dispatch(actions.setActiveCellLocation(cell.location))
@@ -125,6 +131,7 @@ export const Cell: React.FC<IProps> = React.memo(
         } else if (e.key === 'Backspace') {
           if (!focused) {
             e.preventDefault()
+            dispatch(actions.clearCycle(cellLocation))
             dispatch(actions.resetCell(cellLocation))
           }
         } else {
@@ -160,14 +167,14 @@ export const Cell: React.FC<IProps> = React.memo(
         key={cell.col}
         className={classNames('workbook-cell-outer', {
           'workbook-cell-outer--selected': selected,
-          'workbook-cell-outer--error': cellInvalid,
+          'workbook-cell-outer--error': !cell.valid,
         })}
       >
         {selected && focused ? (
           <input
             className={classNames('workbook-cell-inner', {
               'workbook-cell-inner--selected': selected,
-              'workbook-cell-inner--error': cellInvalid,
+              'workbook-cell-inner--error': !cell.valid,
             })}
             onFocus={() => setFocused(true)}
             onBlur={() => {
@@ -186,17 +193,19 @@ export const Cell: React.FC<IProps> = React.memo(
             })}
             onClick={setSelected}
             onMouseEnter={() => {
-              if (!cellInvalid) return
+              if (cell.valid) return
               setHovered(true)
             }}
             onMouseLeave={() => {
-              if (!cellInvalid) return
+              if (cell.valid) return
               setHovered(false)
             }}
           >
-            {cellInvalid ? '#REF' : cell.value}
-            {hovered && cellInvalid && (
-              <div className="workbook-cell-cellInvalid">{cellInvalid}</div>
+            {cell.valid ? cell.value : '#REF'}
+            {hovered && !cell.valid && (
+              <div className="workbook-cell-cell.invalid">
+                Dependency cycle detected
+              </div>
             )}
           </div>
         )}

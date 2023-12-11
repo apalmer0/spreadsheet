@@ -5,7 +5,8 @@ import { ICell, RootState, TWorkbook } from '../../types'
 import { COL_COUNT, LETTERS, ROW_COUNT, WORKBOOK } from '../../constants'
 import {
   calculateValue,
-  getUpstreamReferences,
+  getCycleElements,
+  getInputLocations,
 } from '../../components/Cell/utils'
 
 export type WorkbookState = {
@@ -14,18 +15,18 @@ export type WorkbookState = {
   workbook: TWorkbook
 }
 
-const workbook: TWorkbook = {}
+const initialWorkbook: TWorkbook = {}
 
 WORKBOOK.forEach((row) => {
   row.forEach((cell) => {
-    workbook[cell.location] = cell
+    initialWorkbook[cell.location] = cell
   })
 })
 
 const initialState: WorkbookState = {
   activeCellLocation: undefined,
   name: 'Untitled Workbook',
-  workbook,
+  workbook: initialWorkbook,
 }
 
 const getCol = (location: string): string => {
@@ -47,15 +48,17 @@ const getLocationValues = (location: string): [string, number] => {
 // perform topological sort to get the correct order
 // need to detect circular references too
 const updateReferences = (cell: ICell, workbook: TWorkbook) => {
-  cell.outputs.forEach((outputCell) => {
-    const cell = workbook[outputCell]
-    const calculatedValue = calculateValue(cell, workbook)
+  cell.outputs.forEach((outputCellLocation) => {
+    const cell = workbook[outputCellLocation]
 
-    workbook[outputCell] = {
+    const calculatedValue = calculateValue(cell, workbook)
+    console.log('calculatedValue', outputCellLocation, calculatedValue)
+
+    workbook[outputCellLocation] = {
       ...cell,
       value: calculatedValue.toString(),
     }
-    updateReferences(workbook[outputCell], workbook)
+    updateReferences(workbook[outputCellLocation], workbook)
   })
 }
 
@@ -69,52 +72,113 @@ export const workbookSlice = createSlice({
     setActiveCellLocation: (state, action: PayloadAction<string>) => {
       state.activeCellLocation = action.payload
     },
-    updateCellFormula: (state, action: PayloadAction<ICell>) => {
-      // clear output references - formula might have removed that input
-      action.payload.inputs.forEach((inputCell) => {
-        const filteredOutputs = state.workbook[inputCell].outputs.filter(
-          (cellReference) => cellReference !== action.payload.location,
-        )
-        state.workbook[inputCell].outputs = filteredOutputs
-      })
+    updateCellFormula: (
+      state,
+      action: PayloadAction<{ cellLocation: string; newFormula: string }>,
+    ) => {
+      const { cellLocation, newFormula } = action.payload
+      const cell = state.workbook[cellLocation]
 
-      const references = getUpstreamReferences(
-        action.payload.formula,
-        state.workbook,
-      )
-      const calculatedValue = calculateValue(action.payload, state.workbook)
-
-      state.workbook[action.payload.location] = {
-        ...action.payload,
-        formula: action.payload.formula,
-        inputs: references,
-        value: calculatedValue.toString(),
+      state.workbook[cellLocation] = {
+        ...cell,
+        formula: newFormula,
       }
 
-      references.forEach((referencedCell) => {
-        state.workbook[referencedCell].outputs = [
-          ...state.workbook[referencedCell].outputs,
-          action.payload.location,
-        ]
+      // 1. clear reciprocal references from input cells
+      // clear reciprocal references from input cells - formula might no longer
+      // have those cells as inputs, so they shouldn't include this cell as an output
+      cell.inputs.forEach((inputLocation) => {
+        const inputCell = state.workbook[inputLocation]
+        const filteredOutputs = inputCell.outputs.filter(
+          (cellReference) => cellReference !== cell.location,
+        )
+        state.workbook[inputLocation].outputs = filteredOutputs
+        // inputCell.outputs = filteredOutputs
+      })
+
+      // 2. using new formula, re-establish input references
+      const inputLocations = getInputLocations(newFormula, state.workbook)
+      state.workbook[cellLocation].inputs = inputLocations
+
+      // 3. update input cells to have the current cell as an output
+      inputLocations.forEach((inputLocation) => {
+        const currentOutputs = state.workbook[inputLocation].outputs
+
+        if (!currentOutputs.includes(cell.location)) {
+          state.workbook[inputLocation].outputs = [
+            ...currentOutputs,
+            cell.location,
+          ]
+        }
       })
     },
-    updateCellValue: (state, action: PayloadAction<ICell>) => {
-      state.workbook[action.payload.location] = {
-        ...action.payload,
-        value: action.payload.value,
+    calculateCellValue: (state, action: PayloadAction<string>) => {
+      const cell = state.workbook[action.payload]
+
+      if (!cell.valid) return
+      if (!cell.formula) return
+
+      const calculatedValue = calculateValue(cell, state.workbook)
+      state.workbook[action.payload].value = calculatedValue.toString()
+    },
+    updateCellValue: (
+      state,
+      action: PayloadAction<{ cellLocation: string; newValue: string }>,
+    ) => {
+      const { cellLocation, newValue } = action.payload
+      const cell = state.workbook[cellLocation]
+
+      state.workbook[cellLocation] = {
+        ...cell,
+        formula: newValue,
+        value: newValue,
       }
     },
     updateReferences: (state, action: PayloadAction<string>) => {
-      updateReferences(state.workbook[action.payload], state.workbook)
+      console.log('updateReferences', action.payload)
+      const cell = state.workbook[action.payload]
+      if (cell.valid) {
+        updateReferences(state.workbook[action.payload], state.workbook)
+      }
+    },
+    clearCycle: (state, action: PayloadAction<string>) => {
+      const cell = state.workbook[action.payload]
+      const cycles = getCycleElements(cell, state.workbook)
+
+      cycles.forEach((cellLocation) => {
+        state.workbook[cellLocation] = {
+          ...state.workbook[cellLocation],
+          valid: true,
+        }
+      })
+    },
+    detectCycle: (state, action: PayloadAction<string>) => {
+      const cell = state.workbook[action.payload]
+      const cycles = getCycleElements(cell, state.workbook)
+
+      cycles.forEach((cell) => {
+        state.workbook[cell] = {
+          ...state.workbook[cell],
+          valid: false,
+        }
+      })
     },
     resetCell: (state, action: PayloadAction<string>) => {
       const cell = state.workbook[action.payload]
+
+      // remove this cell from the outputs of its input cells
+      cell.inputs.forEach((inputLocation) => {
+        const currentOutputs = state.workbook[inputLocation].outputs
+        const filteredOutputs = currentOutputs.filter(
+          (cellReference) => cellReference !== cell.location,
+        )
+        state.workbook[inputLocation].outputs = filteredOutputs
+      })
 
       state.workbook[action.payload] = {
         ...cell,
         formula: '',
         inputs: [],
-        outputs: [],
         value: '',
       }
     },
