@@ -6,7 +6,7 @@ export interface ICell {
   inputs: string[]
   location: string
   outputs: string[]
-  row: string
+  row: number
   valid: boolean
   value: string
 }

@@ -29,21 +29,6 @@ const initialState: WorkbookState = {
   workbook: initialWorkbook,
 }
 
-const getCol = (location: string): string => {
-  return location.match(/[a-zA-Z]+/g)![0]
-}
-
-const getRow = (location: string): number => {
-  return parseInt(location.match(/\d+/g)![0], 10)
-}
-
-const getLocationValues = (location: string): [string, number] => {
-  const col = getCol(location)
-  const row = getRow(location)
-
-  return [col, row]
-}
-
 // naive implementation - ignores order of cell updates. need to
 // perform topological sort to get the correct order
 // need to detect circular references too
@@ -182,8 +167,7 @@ export const workbookSlice = createSlice({
     },
     selectUp: (state) => {
       if (!state.activeCellLocation) return
-
-      const [col, row] = getLocationValues(state.activeCellLocation)
+      const { col, row } = state.workbook[state.activeCellLocation]
       const prevRow = row - 1
 
       if (prevRow < 1) return
@@ -192,15 +176,13 @@ export const workbookSlice = createSlice({
     },
     selectTop: (state) => {
       if (!state.activeCellLocation) return
-
-      const [col] = getLocationValues(state.activeCellLocation)
+      const { col } = state.workbook[state.activeCellLocation]
 
       state.activeCellLocation = `${col}${1}`
     },
     selectRight: (state) => {
       if (!state.activeCellLocation) return
-
-      const [col, row] = getLocationValues(state.activeCellLocation)
+      const { col, row } = state.workbook[state.activeCellLocation]
       const nextColIndex = LETTERS.indexOf(col) + 1
 
       if (nextColIndex > COL_COUNT) return
@@ -211,17 +193,14 @@ export const workbookSlice = createSlice({
     },
     selectLast: (state) => {
       if (!state.activeCellLocation) return
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [_, row] = getLocationValues(state.activeCellLocation)
+      const { row } = state.workbook[state.activeCellLocation]
       const lastCol = LETTERS[COL_COUNT - 1]
 
       state.activeCellLocation = `${lastCol}${row}`
     },
     selectLeft: (state) => {
       if (!state.activeCellLocation) return
-
-      const [col, row] = getLocationValues(state.activeCellLocation)
+      const { col, row } = state.workbook[state.activeCellLocation]
       const prevCol = LETTERS[LETTERS.indexOf(col) - 1]
 
       if (!prevCol) return
@@ -230,16 +209,13 @@ export const workbookSlice = createSlice({
     },
     selectFirst: (state) => {
       if (!state.activeCellLocation) return
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [_, row] = getLocationValues(state.activeCellLocation)
+      const { row } = state.workbook[state.activeCellLocation]
 
       state.activeCellLocation = `A${row}`
     },
     selectDown: (state) => {
       if (!state.activeCellLocation) return
-
-      const [col, row] = getLocationValues(state.activeCellLocation)
+      const { col, row } = state.workbook[state.activeCellLocation]
       const nextRow = row + 1
 
       if (nextRow > ROW_COUNT) return
@@ -248,8 +224,7 @@ export const workbookSlice = createSlice({
     },
     selectBottom: (state) => {
       if (!state.activeCellLocation) return
-
-      const [col] = getLocationValues(state.activeCellLocation)
+      const { col } = state.workbook[state.activeCellLocation]
       const lastRow = ROW_COUNT
 
       state.activeCellLocation = `${col}${lastRow}`
@@ -269,17 +244,23 @@ export const selectors = {
     },
   ),
   selectActiveCol: createSelector(
-    [(state: RootState) => state.workbook.activeCellLocation],
-    (activeCellLocation) => {
+    [
+      (state: RootState) => state.workbook.activeCellLocation,
+      (state: RootState) => state.workbook.workbook,
+    ],
+    (activeCellLocation, workbook) => {
       if (!activeCellLocation) return undefined
-      return getCol(activeCellLocation)
+      return workbook[activeCellLocation].col
     },
   ),
   selectActiveRow: createSelector(
-    [(state: RootState) => state.workbook.activeCellLocation],
-    (activeCellLocation) => {
+    [
+      (state: RootState) => state.workbook.activeCellLocation,
+      (state: RootState) => state.workbook.workbook,
+    ],
+    (activeCellLocation, workbook) => {
       if (!activeCellLocation) return undefined
-      return getRow(activeCellLocation)
+      return workbook[activeCellLocation].row
     },
   ),
 }

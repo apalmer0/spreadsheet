@@ -29,17 +29,11 @@ export const Cell: React.FC<IProps> = React.memo(
       dispatch(actions.clearCycle(cellLocation))
       if (displayValue && displayValue[0] === '=') {
         dispatch(
-          actions.updateCellFormula({
-            cellLocation,
-            newFormula: displayValue,
-          }),
+          actions.updateCellFormula({ cellLocation, newFormula: displayValue }),
         )
       } else {
         dispatch(
-          actions.updateCellValue({
-            cellLocation,
-            newValue: displayValue,
-          }),
+          actions.updateCellValue({ cellLocation, newValue: displayValue }),
         )
       }
       dispatch(actions.detectCycle(cellLocation))

@@ -37,7 +37,7 @@ export const Workbook: React.FC = () => {
             <tr key={rowIndex}>
               <th
                 className={classNames('row-header', {
-                  'row-header--selected': activeRow?.toString() === row[0].row,
+                  'row-header--selected': activeRow === row[0].row,
                 })}
               >
                 {row[0].row}

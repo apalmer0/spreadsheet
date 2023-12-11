@@ -10,7 +10,7 @@ const blankCell: ICell = {
   inputs: [],
   location: '',
   outputs: [],
-  row: '',
+  row: 0,
   valid: true,
   value: '',
 }
@@ -25,7 +25,7 @@ export const WORKBOOK: ICell[][] = ROWS.map((row) => {
       ...blankCell,
       col,
       location: `${col}${rowNumber}`,
-      row: rowNumber.toString(),
+      row: rowNumber,
     }
   })
 })
