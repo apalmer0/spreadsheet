@@ -26,12 +26,10 @@ export const getUpstreamReferences = (
   const tokens = getTokens(formula)
 
   return tokens.reduce((memo, token) => {
-    if (token.match(OPERATORS_REGEX)) {
-      return memo
-    }
-    if (!isNaN(Number(token))) {
-      return memo
-    }
+    if (token.match(OPERATORS_REGEX)) return memo
+    if (!isNaN(Number(token))) return memo
+    if (memo.includes(token)) return memo
+
     if (token in workbook) {
       memo.push(token)
     }
@@ -45,8 +43,6 @@ export const detectCycle = (
   workbook: TWorkbook,
   memo: Set<string> = new Set(),
 ): boolean => {
-  memo.add(cell.location)
-
   const updatedCell: ICell = { ...cell, formula }
   const updatedWorkbook: TWorkbook = {
     ...workbook,
@@ -56,9 +52,12 @@ export const detectCycle = (
   const locationReferences = getUpstreamReferences(formula, updatedWorkbook)
 
   return locationReferences.some((reference) => {
-    const referencedCell = workbook[reference]
+    const referencedCell = updatedWorkbook[reference]
+
     if (memo.has(reference)) return true
+
     memo.add(reference)
+
     return detectCycle(
       referencedCell.formula,
       referencedCell,

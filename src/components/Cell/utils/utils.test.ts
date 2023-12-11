@@ -153,7 +153,33 @@ describe('utils', () => {
           value: '10',
         },
       }
-      const result = detectCycle('A2', cell, workbook)
+      const result = detectCycle(cell.formula, cell, workbook)
+
+      expect(result).toEqual(false)
+    })
+
+    it('should return false if referencing the same cell twice', () => {
+      const cell: ICell = {
+        col: 'A',
+        formula: '=A2+A2',
+        inputs: [],
+        location: 'A1',
+        outputs: [],
+        row: '1',
+        value: '',
+      }
+      const workbook: TWorkbook = {
+        A2: {
+          col: 'A',
+          formula: '',
+          inputs: [],
+          location: 'A2',
+          outputs: [],
+          row: '2',
+          value: '10',
+        },
+      }
+      const result = detectCycle(cell.formula, cell, workbook)
 
       expect(result).toEqual(false)
     })
