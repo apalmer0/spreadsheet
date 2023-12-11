@@ -39,6 +39,7 @@ $error-message-height: 50px;
 
   &--error {
     background-color: transparent;
+    text-align: center;
   }
 }
 
@@ -47,12 +48,13 @@ $error-message-height: 50px;
   border-left: 4px solid red;
   bottom: -($cell-height + $error-message-height);
   box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
+  font-size: 14px;
   font-weight: normal;
   height: $error-message-height;
   left: $cell-width + 1;
   padding: 10px;
   position: absolute;
-  text-align: center;
-  width: 250px;
+  text-align: left;
+  width: 175px;
   z-index: 2;
 }

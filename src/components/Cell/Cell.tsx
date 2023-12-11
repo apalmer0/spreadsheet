@@ -169,12 +169,12 @@ export const Cell: React.FC<IProps> = React.memo(
           'workbook-cell-outer--selected': selected,
           'workbook-cell-outer--error': !cell.valid,
         })}
+        onClick={() => setFocused(true)}
       >
         {selected && focused ? (
           <input
             className={classNames('workbook-cell-inner', {
               'workbook-cell-inner--selected': selected,
-              'workbook-cell-inner--error': !cell.valid,
             })}
             onFocus={() => setFocused(true)}
             onBlur={() => {
@@ -190,6 +190,7 @@ export const Cell: React.FC<IProps> = React.memo(
           <div
             className={classNames('workbook-cell-inner', {
               'workbook-cell-inner--selected': selected,
+              'workbook-cell-inner--error': !cell.valid,
             })}
             onClick={setSelected}
             onMouseEnter={() => {
@@ -203,7 +204,7 @@ export const Cell: React.FC<IProps> = React.memo(
           >
             {cell.valid ? cell.value : '#REF'}
             {hovered && !cell.valid && (
-              <div className="workbook-cell-cell.invalid">
+              <div className="workbook-cell-error">
                 Dependency cycle detected
               </div>
             )}
