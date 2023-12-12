@@ -8,7 +8,7 @@ export interface ICell {
   outputs: string[]
   row: number
   valid: boolean
-  value: string
+  value: string | number
 }
 
 export type TWorkbook = Record<string, ICell>

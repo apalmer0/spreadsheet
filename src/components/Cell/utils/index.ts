@@ -2,7 +2,7 @@ import { ICell, TWorkbook } from '../../../types'
 
 const OPERATORS_REGEX = /(\+|-|\*|\/|\(|\))/g
 
-const getTokens = (formula: string): string[] => {
+export const getTokens = (formula: string): string[] => {
   return formula
     .replace('=', '')
     .split(OPERATORS_REGEX)
@@ -62,46 +62,81 @@ export const detectCycle = (cell: ICell, workbook: TWorkbook): boolean => {
   return getCycleElements(cell, workbook).length > 0
 }
 
+export const tokenIsCellLocation = (token: string): boolean => {
+  const regex = /^[a-zA-Z]\d$/
+  return regex.test(token)
+}
+
+export const formulaIsValid = (formula: string): boolean => {
+  const regex = /^=[a-zA-Z0-9]+/
+  return regex.test(formula)
+}
+
+export const valueIsString = (value: string | number): value is string => {
+  return value === '' || isNaN(Number(value))
+}
+
 export const calculateValue = (
-  cell: ICell | undefined,
+  cell: ICell,
   workbook: TWorkbook,
-): number => {
-  if (!cell) return 0
-  if (!cell.formula) return Number(cell.value ?? 0)
-  if (cell.formula[0] !== '=') return Number(cell.value ?? 0)
+): number | string => {
+  if (!formulaIsValid(cell.formula)) return cell.value
 
   const tokens = getTokens(cell.formula)
 
-  let result = 0
+  let result: string | number = 0
   let operation = undefined
 
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i]
 
-    if (!token.match(OPERATORS_REGEX)) {
-      let cellValue = 0
-      if (isNaN(Number(token))) {
+    if (token.match(OPERATORS_REGEX)) {
+      operation = token
+    } else {
+      let cellValue: string | number = ''
+      if (tokenIsCellLocation(token)) {
         const cell = workbook[token]
         cellValue = calculateValue(cell, workbook)
       } else {
-        cellValue = Number(token)
+        cellValue = token
       }
 
-      if (!operation) {
-        result += cellValue
-      } else if (operation === '+') {
-        result += cellValue
-      } else if (operation === '-') {
-        result -= cellValue
-      } else if (operation === '*') {
-        result *= cellValue
-      } else if (operation === '/') {
-        result /= cellValue
+      if (valueIsString(cellValue)) {
+        if (result === 0) {
+          result = ''
+        }
+        if (!operation || operation === '+') {
+          result += cellValue
+        } else {
+          throw new Error('Unsupported operation')
+        }
       } else {
-        throw new Error('Unknown operation')
+        cellValue = Number(cellValue)
+
+        if (valueIsString(result)) {
+          if (!operation || operation === '+') {
+            result += cellValue
+          } else {
+            throw new Error('Unsupported operation')
+          }
+        } else {
+          result = Number(result)
+
+          if (!operation) {
+            result += cellValue
+          } else if (operation === '+') {
+            result += cellValue
+          } else if (operation === '-') {
+            result -= cellValue
+          } else if (operation === '*') {
+            result *= cellValue
+          } else if (operation === '/') {
+            result /= cellValue
+          } else {
+            throw new Error('Unknown operation')
+          }
+        }
       }
-    } else {
-      operation = token
     }
   }
 

@@ -40,7 +40,7 @@ const updateReferences = (cell: ICell, workbook: TWorkbook) => {
 
     workbook[outputCellLocation] = {
       ...cell,
-      value: calculatedValue.toString(),
+      value: calculatedValue,
     }
     updateReferences(workbook[outputCellLocation], workbook)
   })
@@ -103,7 +103,7 @@ export const workbookSlice = createSlice({
       if (!cell.formula) return
 
       const calculatedValue = calculateValue(cell, state.workbook)
-      state.workbook[action.payload].value = calculatedValue.toString()
+      state.workbook[action.payload].value = calculatedValue
     },
     updateCellValue: (
       state,
@@ -114,7 +114,7 @@ export const workbookSlice = createSlice({
 
       state.workbook[cellLocation] = {
         ...cell,
-        formula: newValue,
+        formula: newValue.toString(),
         value: newValue,
       }
     },
