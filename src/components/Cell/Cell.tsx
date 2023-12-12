@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import classNames from 'classnames'
 
 import { actions } from '../../store/slices/workbookSlice'
+import { formulaIsValid } from './utils'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import './Cell.scss'
 
@@ -26,8 +27,11 @@ export const Cell: React.FC<IProps> = React.memo(
     }
 
     const persistChange = useCallback(() => {
+      if (!displayValue) return
+
       dispatch(actions.clearCycle(cellLocation))
-      if (displayValue && displayValue[0] === '=') {
+
+      if (formulaIsValid(displayValue[0])) {
         dispatch(
           actions.updateCellFormula({ cellLocation, newFormula: displayValue }),
         )
@@ -36,6 +40,7 @@ export const Cell: React.FC<IProps> = React.memo(
           actions.updateCellValue({ cellLocation, newValue: displayValue }),
         )
       }
+
       dispatch(actions.detectCycle(cellLocation))
       dispatch(actions.calculateCellValue(cellLocation))
       dispatch(actions.updateReferences(cellLocation))
